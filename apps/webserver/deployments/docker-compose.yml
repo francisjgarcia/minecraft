@@ -1,0 +1,17 @@
+version: '3.6'
+services:
+  webserver:
+    container_name: webserver
+    image: ${IMAGE_NAME}
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+    ports:
+      - ${EXPOSE_PORT}:5000
+    volumes:
+      - ../app:/usr/src/app:ro
+      - ../../../files/mods:/mnt/minecraft/mods:ro
+    env_file:
+      - ../app/.env
+    tty: true
+    command: sh

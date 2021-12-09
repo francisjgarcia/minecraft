@@ -1,0 +1,12 @@
+---
+minecraft_environment:
+  TZ=Europe/Madrid
+  EULA=true
+  SERVER_NAME={{ minecraft_world_name }}
+  LEVEL={{ minecraft_world_name }}
+  VERSION={{ minecraft_version }}
+  TYPE={{ minecraft_type }}
+  ONLINE_MODE={{ minecraft_online_mode }}
+  ENABLE_WHITELIST={{ minecraft_whitelist }}
+  SEED={{ minecraft_seed }}
+  MEMORY="" # Unlimited memory

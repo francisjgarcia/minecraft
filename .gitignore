@@ -1,0 +1,20 @@
+# Minecraft mods
+*.jar
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock*
+terraform/*.tfstate*
+
+# Ansible
+*.retry
+
+# Docker
+docker/minecraft/data/
+
+# Python
+__pycache__/
+.env
+
+# Other
+/backup/

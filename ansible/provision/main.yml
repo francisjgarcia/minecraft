@@ -1,0 +1,5 @@
+---
+- import_playbook: install-packages.yml
+- import_playbook: download-backup.yml
+- import_playbook: minecraft-server.yml
+- import_playbook: resource-applications.yml

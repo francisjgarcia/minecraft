@@ -1,0 +1,29 @@
+---
+- name: upload backup
+  hosts: all
+  become: yes
+  vars_files: ../variables.yml
+  tasks:
+    - name: Archive folder minecraft-data for backup
+      archive:
+        path: /storage/minecraft/data
+        dest: /tmp/minecraft.tar.gz
+        format: gz
+
+    - name: Backup compressed folder minecraft-data to backup
+      fetch:
+        flat: yes
+        src: /tmp/minecraft.tar.gz
+        dest: ../../backup/
+        validate_checksum: yes
+
+    - name: Upload minecraft backup if exists
+      command: python ../../scripts/backup/backup.py upload
+      become: yes
+      delegate_to: localhost
+
+    - name: Remove local backup
+      file:
+        path: ../../backup/
+        state: absent
+      delegate_to: localhost

@@ -1,0 +1,29 @@
+---
+- name: install packages
+  hosts: all
+  become: yes
+  vars_files: ../variables.yml
+  tasks:
+    - name: Update all packages
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Install docker and some dependencies
+      apt:
+        name: ['python3-pip', 'docker.io', 'docker-compose', 'apparmor', 'unzip']
+        state: present
+
+    - name: Start docker service
+      service:
+        name: docker
+        state: started
+
+    - name: Install docker python module
+      pip:
+        name: docker
+
+    - name: Install python-dotenv package in local
+      pip:
+        name: ['python-dotenv']
+      delegate_to: localhost

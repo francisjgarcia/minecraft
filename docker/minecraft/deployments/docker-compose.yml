@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  minecraft:
+    container_name: minecraft
+    image: itzg/minecraft-server:latest
+    ports:
+      - 25565:25565
+      - 25565:25565/udp
+    volumes:
+      - ../data:/data
+    environment:
+      TZ: Europe/Madrid
+      EULA: "true"
+      SERVER_NAME: ${WORLD_NAME}
+      LEVEL: ${WORLD_NAME}
+      VERSION: ${VERSION}
+      MOTD: ${MOTD}
+      TYPE: ${TYPE}.
+      ONLINE_MODE: ${ONLINE_MODE}
+      ENABLE_WHITELIST: ${WHITE_LIST}
+      SEED: ${SEED}
+      MEMORY: "" # Unlimited memory
+    restart: always

@@ -1,0 +1,13 @@
+---
+# Ansible variables
+ansible_ssh_private_key_file: ~/.ssh/minecraft.pk
+ansible_python_interpreter: /usr/bin/python3
+
+# Minecraf variables
+minecraft_world_name: minecraft
+minecraft_motd: "Welcome to the Minecraft server!"
+minecraft_version: 1.18
+minecraft_type: forge
+minecraft_online_mode: false
+minecraft_whitelist: true
+minecraft_seed: 5725851600822493716

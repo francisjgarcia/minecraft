@@ -1,0 +1,41 @@
+---
+- name: install minecraft server
+  hosts: all
+  become: yes
+  vars_files:
+    - ../variables.yml
+    - minecraft-server-variables.yml
+  tasks:
+    # Copy mods folder
+    - name: Copy mods folder before starting server
+      copy:
+        src: ../../files/mods
+        dest: /storage/minecraft/data
+      when: minecraft_type == 'forge'
+
+    # Mod voice configuration
+    - name: Make directory for voice configuration
+      file:
+        path: '/storage/minecraft/data/{{ minecraft_world_name }}/serverconfig'
+        state: directory
+      when: minecraft_type == 'forge'
+
+    - name: Copy mod voice config
+      copy:
+        src: ../../files/config/voicechat-server.toml
+        dest: '/storage/minecraft/data/{{ minecraft_world_name }}/serverconfig/voicechat-server.toml'
+      when: minecraft_type == 'forge'
+
+    # Minecraft server
+    - name: Run Minecraft server
+      docker_container:
+        name: minecraft
+        image: itzg/minecraft-server:latest
+        volumes:
+          - /storage/minecraft/data:/data
+        published_ports:
+          - 25565:25565
+          - 25565:25565/udp
+        env: 
+          "{{ minecraft_environment }}"
+        state: started

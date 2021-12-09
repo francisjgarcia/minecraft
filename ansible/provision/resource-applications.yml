@@ -1,0 +1,49 @@
+---
+- name: resource applications
+  hosts: all
+  become: yes
+  vars_files: ../variables.yml
+  tasks:
+    # Minecraft status webserver
+    - name: Copy status webserver app
+      copy:
+        src: ../../apps/webserver
+        dest: /storage
+
+    - name: Build webserver image
+      docker_image:
+        name: '{{ minecraft_world_name }}/webserver'
+        path: /storage/webserver
+        dockerfile: /storage/webserver/deployments/Dockerfile
+
+    - name: Run status webserver
+      docker_container:
+        name: webserver
+        image: '{{ minecraft_world_name }}/webserver'
+        volumes:
+          - /storage/minecraft/data/mods:/mnt/minecraft/mods:ro
+        published_ports:
+          - 80:5000
+        env_file: /storage/webserver/app/.env
+        recreate: yes
+        state: started
+
+    # Minecraft discord bot
+    - name: Copy discord bot app
+      copy:
+        src: ../../apps/discord
+        dest: /storage
+
+    - name: Build discord bot image
+      docker_image:
+        name: '{{ minecraft_world_name }}/discord'
+        path: /storage/discord
+        dockerfile: /storage/discord/deployments/Dockerfile
+
+    - name: Run discord bot
+      docker_container:
+        name: discord
+        image: '{{ minecraft_world_name }}/discord'
+        env_file: /storage/discord/app/.env
+        recreate: yes
+        state: started

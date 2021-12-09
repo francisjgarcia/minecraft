@@ -1,0 +1,14 @@
+---
+- name: stop minecraft
+  hosts: all
+  become: yes
+  vars_files: ../variables.yml
+  tasks:
+    - name: Stop Docker Container
+      docker_container:
+        name: minecraft
+        state: stopped
+
+    - name: Sleep for 120 seconds to update discord status
+      wait_for:
+        timeout: 120

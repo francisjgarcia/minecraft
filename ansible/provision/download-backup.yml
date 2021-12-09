@@ -1,0 +1,27 @@
+---
+- name: download backup
+  hosts: all
+  become: yes
+  vars_files: ../variables.yml
+  tasks:
+    - name: Download minecraft backup to local if exists
+      command: python ../../scripts/backup/backup.py download
+      delegate_to: localhost
+      ignore_errors: yes
+
+    - name: Check whether a backup is to be imported
+      local_action: stat path=../../backup/minecraft.tar.gz
+      register: backup
+
+    - name: Upload local backup and extract if specified
+      unarchive:
+        src: ../../backup/minecraft.tar.gz
+        dest: /storage/minecraft
+      when: backup.stat.exists
+
+    - name: Remove local backup
+      file:
+        path: ../../backup/
+        state: absent
+      delegate_to: localhost
+      when: backup.stat.exists
