@@ -239,3 +239,26 @@ python backup.py upload <path/to/backup>
 cd scripts/backup
 python backup.py download <path/to/backup>
 ```
+
+## Desplegar infraestructura
+
+Una vez hayas realizado todos lo pasos previos, puedes ejecutar el script de despliegue de la infraestructura con el siguiente comando:
+
+Para comprobar como quedará la infraestructura una vez desplegada:
+```
+cd terraform
+terraform plan
+```
+
+Y si queremos desplegarla:
+```
+cd terraform
+terraform apply
+```
+
+También podemos guardar el plan en un fichero para ejecutarlo y que siempre mantenga el estado de la infraestructura:
+```
+cd terraform
+terraform plan -out <nombre-fichero>
+terraform apply <nombre-fichero>
+```
