@@ -15,7 +15,7 @@ services:
       LEVEL: ${WORLD_NAME}
       VERSION: ${VERSION}
       MOTD: ${MOTD}
-      TYPE: ${TYPE}.
+      TYPE: ${TYPE}
       ONLINE_MODE: ${ONLINE_MODE}
       ENABLE_WHITELIST: ${WHITE_LIST}
       SEED: ${SEED}
