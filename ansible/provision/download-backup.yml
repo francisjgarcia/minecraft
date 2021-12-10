@@ -13,6 +13,12 @@
       local_action: stat path=../../backup/minecraft.tar.gz
       register: backup
 
+    - name: Create minecraft folder
+      file:
+        path: /storage/minecraft
+        state: directory
+      when: backup.stat.exists
+
     - name: Upload local backup and extract if specified
       unarchive:
         src: ../../backup/minecraft.tar.gz
