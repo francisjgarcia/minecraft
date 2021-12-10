@@ -13,7 +13,7 @@ def upload():
     try:
         session = ftplib.FTP(server, username, password)
         file = open(f'{backup_path}/minecraft.tar.gz','rb')
-        session.storbinary('STOR backups/'+hostname+'_'+date+'.zip', file)
+        session.storbinary('STOR backups/'+hostname+'_'+date+'.tar.gz', file)
         file.close()
         session.quit()
         os.remove(f'{backup_path}/minecraft.tar.gz')
