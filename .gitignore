@@ -1,0 +1,15 @@
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock*
+
+# Ansible
+ansible/playbooks/backups/
+ansible/*.retry
+
+# Docker
+docker/data/
+docker/.env
+
+# SSH keys
+*.pem
+*.pub

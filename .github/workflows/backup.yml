@@ -1,0 +1,65 @@
+name: Backup Minecraft Server
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 3 * * *
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: .
+
+jobs:
+  setup:
+    name: Obtaining repository
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Use repository
+        uses: actions/checkout@v3
+
+      - name: Upload repository
+        uses: actions/upload-artifact@v3
+        with:
+          name: repository
+          path: |
+            ${{ github.workspace }}/ansible
+
+  backup:
+    name: Obtaining backup
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+    steps:
+      - name: Download repository
+        uses: actions/download-artifact@v3
+        with:
+          name: repository
+
+      - name: Add SSH private key
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+      - name: Run ansible script
+        shell: bash 
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False \
+          ansible-playbook -u root -i '${{ vars.SUBDOMAIN }}.${{ vars.DOMAIN }},' playbooks/backup.yml
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+      - name: Create backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup
+          path: |
+            ${{ github.workspace }}/playbooks/backups

@@ -1,0 +1,73 @@
+---
+- name: Install minecraft server
+  hosts: all
+  vars_files: ../variables.yml
+
+  tasks:
+    # Download mods
+    - name: Delete mod folder
+      file:
+        path: /storage/minecraft/data/mods
+        state: absent
+      when: enable_mods == true and minecraft_mods is defined and minecraft_environment.TYPE == 'forge'
+
+    - name: Create mod folder
+      file:
+        path: /storage/minecraft/data/mods
+        state: directory
+      when: enable_mods == true and minecraft_mods is defined and minecraft_environment.TYPE == 'forge'
+
+    - name: Download mods
+      get_url:
+        url: "{{ item }}"
+        dest: /storage/minecraft/data/mods
+      loop: "{{ minecraft_mods }}"
+      when: enable_mods == true and minecraft_mods is defined and minecraft_environment.TYPE == 'forge'
+
+    # Configure voicechat mod
+    - name: Creating serverconfig directory
+      file:
+        path: "/storage/minecraft/data/{{ minecraft_environment['LEVEL'] }}/serverconfig/"
+        owner: 1000
+        group: 1000
+        mode: 0775
+        state: directory
+      when: enable_mods == true and minecraft_mods is defined and enable_voicechat == true and minecraft_environment.TYPE == 'forge'
+
+    - name: Change voicechat port
+      copy:
+        src: voicechat-server.toml
+        dest: "/storage/minecraft/data/{{ minecraft_environment['LEVEL'] }}/serverconfig/voicechat-server.toml"
+        owner: 1000
+        group: 1000
+        mode: 0664
+      when: enable_mods == true and minecraft_mods is defined and enable_voicechat == true and minecraft_environment.TYPE == 'forge'
+
+    # Run docker service
+    - name: Start docker service
+      service:
+        name: docker
+        state: started
+
+    # Create docker network
+    - name: Create docker network
+      docker_network:
+        name: minecraft
+
+    # Minecraft server
+    - name: Run Minecraft server
+      docker_container:
+        name: minecraft
+        image: "itzg/minecraft-server:{{ image_tag }}"
+        volumes:
+          - /storage/minecraft/data:/data
+        published_ports:
+          - 25565:25565
+          - 25565:25565/udp
+        networks:
+          - name: minecraft
+        env: "{{ minecraft_environment }}"
+        container_default_behavior: no_defaults
+        recreate: yes
+        state: started
+        restart_policy: always

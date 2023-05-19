@@ -1,0 +1,112 @@
+name: Destroying infrastructure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: .
+
+env:
+  TF_WORKSPACE: ${{ github.ref == 'refs/heads/master' && 'production' || github.ref == 'refs/heads/development' && 'development' }}
+  TF_CLOUD_ORGANIZATION: ${{ vars.TERRAFORM_CLOUD_ORGANIZATION }}
+  TF_VAR_hcloud_token: ${{ secrets.HETZNER_TOKEN }}
+  TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+  TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+  TF_VAR_subdomain: ${{ vars.SUBDOMAIN }}
+  TF_VAR_domain: ${{ vars.DOMAIN }}
+  TF_VAR_hostname: ${{ vars.HOSTNAME }}
+  TF_VAR_location: ${{ vars.SERVER_LOCATION }}
+  TF_VAR_server_type: ${{ vars.SERVER_TYPE }}
+
+jobs:
+  setup:
+    name: Obtaining repository
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/master' && 'production' || github.ref == 'refs/heads/development' && 'development' }}
+    steps:
+      - name: Use repository
+        uses: actions/checkout@v3
+
+      - name: Upload repository
+        uses: actions/upload-artifact@v3
+        with:
+          name: repository
+          path: |
+            ${{ github.workspace }}/ansible
+            ${{ github.workspace }}/terraform
+
+  backup:
+    name: Obtaining backup
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ github.ref == 'refs/heads/master' && 'production' || github.ref == 'refs/heads/development' && 'development' }}
+    steps:
+      - name: Download repository
+        uses: actions/download-artifact@v3
+        with:
+          name: repository
+
+      - name: Add SSH private key
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+      - name: Run ansible script
+        shell: bash 
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False \
+          ansible-playbook -u root -i '${{ vars.SUBDOMAIN }}.${{ vars.DOMAIN }},' ansible/playbooks/backup.yml
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+      - name: Create backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup
+          path: |
+            ${{ github.workspace }}/ansible/playbooks/backups
+
+  destroy:
+    name: Destroying infrastructure
+    needs: [setup, backup]
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || github.ref == 'refs/heads/development' && 'development' }}
+    steps:
+      - name: Download repository
+        uses: actions/download-artifact@v3
+        with:
+          name: repository
+
+      - name: Add SSH public key
+        run: |
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > terraform/minecraft.pub
+          chmod 600 terraform/minecraft.pub
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
+
+      - name: Terraform fmt
+        run: cd terraform && terraform fmt -check
+
+      - name: Terraform init
+        run: cd terraform && terraform init
+
+      - name: Terraform validate
+        run: cd terraform && terraform validate
+
+      - name: Terraform plan
+        run: cd terraform && terraform plan -destroy
+
+      - name: Terraform destroy
+        run: cd terraform && terraform destroy -auto-approve

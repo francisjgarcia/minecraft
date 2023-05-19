@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  minecraft:
+    container_name: minecraft
+    image: itzg/minecraft-server:${IMAGE_TAG:-latest}
+    ports:
+      - 25565:25565
+      - 25565:25565/udp
+    networks:
+      - minecraft
+    volumes:
+      - ./data:/data
+    env_file:
+      - .env
+    environment:
+      - EULA=true
+    restart: on-failure
+
+networks:
+  minecraft:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/24

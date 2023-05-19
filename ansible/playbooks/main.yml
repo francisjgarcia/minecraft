@@ -1,0 +1,3 @@
+---
+- import_playbook: install-packages.yml
+- import_playbook: minecraft-server.yml

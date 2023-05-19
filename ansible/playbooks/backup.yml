@@ -1,0 +1,32 @@
+---
+- name: Server backup
+  hosts: all
+  vars_files: ../variables.yml
+
+  tasks:
+    - name: Stop docker container
+      docker_container:
+        name: minecraft
+        state: stopped
+
+    - name: Archive folder minecraft data for backup
+      archive:
+        path: /storage/minecraft/data
+        dest: /tmp/minecraft.tar.gz
+        format: gz
+
+    - name: Create backup folder
+      file:
+        path: backups/
+        state: directory
+  
+    - name: Download backup file
+      fetch:
+        src: /tmp/minecraft.tar.gz
+        dest: backups/
+        flat: yes
+
+    - name: Start docker container
+      docker_container:
+        name: minecraft
+        state: started

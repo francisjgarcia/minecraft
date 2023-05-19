@@ -1,0 +1,27 @@
+---
+# Ansible variables
+ansible_python_interpreter: /usr/bin/python3 # Python interpreter
+
+# Minecraft service variables
+image_tag: latest # Docker image tag
+
+# Minecraft variables
+minecraft_environment:
+  EULA: 'true' # Accept EULA (always true)
+  SERVER_NAME: minecraft # Server name
+  LEVEL: world # World name
+  MOTD: 'Welcome to Minecraft Server' # Message of the day
+  VERSION: '1.19.4' # Minecraft version
+  TYPE: forge # Server type (forge, fabric, quilt, spigot, paper...)
+  FORGE_VERSION: 45.0.59 # Forge version (only for forge servers)
+  ONLINE_MODE: 'true' # Online mode (if true, only registered Mojang users can join)
+  ENABLE_WHITELIST: 'true' # Enable whitelist (true or false)
+  SEED: '0123456789' # Seed for the world
+  MEMORY: 1G # Memory for the server
+  TZ: Europe/Madrid # Timezone
+
+# Minecraft mods
+enable_mods: false # Enable mods (true or false)
+enable_voicechat: false # Enable voicechat mod (true or false) (only if enable_mods is true and previously the mod are listed in minecraft_mods and enable_mods)
+minecraft_mods: # List of mods to install (only if enable_mods is true)
+  - https://example.com/path/to/mod.jar

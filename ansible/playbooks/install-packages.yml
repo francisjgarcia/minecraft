@@ -1,0 +1,19 @@
+---
+- name: Install packages
+  hosts: all
+  vars_files: ../variables.yml
+
+  tasks:
+    - name: Update all packages
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Install docker and some dependencies
+      apt:
+        name: ['python3-pip', 'docker.io', 'apparmor', 'htop', 'unzip']
+        state: present
+
+    - name: Install docker python module
+      pip:
+        name: docker
